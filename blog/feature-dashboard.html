@@ -1067,19 +1067,19 @@
         <div class="summary">
             <div class="summary-card">
                 <h3>Total Features</h3>
-                <div class="value">{summary.get('n_features', 'N/A')}</div>
+                <div class="value">40960</div>
             </div>
             <div class="summary-card">
                 <h3>Active Features</h3>
-                <div class="value">{summary.get('active_features', 'N/A')}</div>
+                <div class="value">12697</div>
             </div>
             <div class="summary-card">
                 <h3>Cells Analyzed</h3>
-                <div class="value">{summary.get('n_cells_analyzed', 'N/A') if isinstance(summary.get('n_cells_analyzed', 'N/A'), str) else f"{summary.get('n_cells_analyzed', 0):,}"}</div>
+                <div class="value">100,000</div>
             </div>
             <div class="summary-card">
                 <h3>Top Genes/Feature</h3>
-                <div class="value">{summary.get('top_k_genes', 'N/A')}</div>
+                <div class="value">100</div>
             </div>
         </div>
 
@@ -21236,7 +21236,6 @@
         }
 
         // Highlight active nav item on scroll
-        const featureCards = document.querySelectorAll('.feature-card');
         const navItems = document.querySelectorAll('.nav-item');
 
         const observer = new IntersectionObserver((entries) => {
