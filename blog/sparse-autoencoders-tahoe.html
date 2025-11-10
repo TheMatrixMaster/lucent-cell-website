@@ -134,11 +134,23 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                         We created an interactive dashboard that allows researchers to explore the extracted features, view top-associated genes, and examine cell-type enrichments. The dashboard provides:
                     </p>
                     <ul>
-                        <li>Feature-by-feature analysis with gene rankings</li>
+                        <li>Feature-by-feature analysis with gene rankings and activation percentiles</li>
                         <li>Cell type enrichment visualizations</li>
-                        <li>Biological pathway associations</li>
+                        <li>Biological pathway associations with color-coded gene cards</li>
                         <li>Search functionality across all features</li>
+                        <li>Sortable gene lists by activation and frequency</li>
+                        <li>Expandable disease/phenotype enrichment dropdowns</li>
                     </ul>
+
+                    <div class="dashboard-cta" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
+                        <h3 style="color: #667eea; margin-bottom: 15px;">Explore 100 SAE Features</h3>
+                        <p style="color: #e0e0e0; margin-bottom: 20px; line-height: 1.6;">
+                            Interactive visualization of sparse autoencoder features trained on 100K cells from the Tahoe-x1 model, with biological validation against 8 major databases including HPO, GWAS Catalog, and Open Targets.
+                        </p>
+                        <a href="feature-dashboard.html" class="btn" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; transition: all 0.3s;">
+                            Launch Interactive Dashboard →
+                        </a>
+                    </div>
 
                     <h2>Implications for Research</h2>
 
