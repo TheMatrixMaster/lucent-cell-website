@@ -420,6 +420,7 @@ section h2::after {
     width: 150px;
     height: 150px;
     object-fit: cover;
+    border-radius: 50%;
 }
 
 .team-page .member-photo img {
