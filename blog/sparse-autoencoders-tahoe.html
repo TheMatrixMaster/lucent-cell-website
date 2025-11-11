@@ -4,20 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sparse Autoencoders Reveal Interpretable Features in Tahoe - Lucent Cell</title>
+    <link rel="icon" type="image/png" href="../images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <h2><a href="../index.html">Lucent Cell</a></h2>
+                <a href="../index.html" class="logo-link">
+                    <img src="../images/logo.png" alt="Lucent Cell Logo" class="logo-image">
+                    <h2>Lucent Cell</h2>
+                </a>
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
                     <a href="../index.html#research" class="nav-link">Research</a>
                 </li>
                 <li class="nav-item">
-                    <a href="../index.html#contact" class="nav-link">Contact</a>
+                    <a href="../index.html#team" class="nav-link">Team</a>
                 </li>
             </ul>
         </div>
@@ -28,7 +35,7 @@
             <article class="post-article">
                 <header class="post-header">
                     <div class="post-meta">
-                        <span class="post-date">November 8, 2024</span>
+                        <span class="post-date">November 8, 2025</span>
                         <span class="post-category">Research</span>
                         <span class="read-time">8 min read</span>
                     </div>
@@ -142,12 +149,12 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                         <li>Expandable disease/phenotype enrichment dropdowns</li>
                     </ul>
 
-                    <div class="dashboard-cta" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
-                        <h3 style="color: #667eea; margin-bottom: 15px;">Explore 100 SAE Features</h3>
-                        <p style="color: #e0e0e0; margin-bottom: 20px; line-height: 1.6;">
+                    <div class="dashboard-cta" style="background: #f8f9fa; padding: 30px; border: 2px solid #000000; margin: 30px 0; text-align: left;">
+                        <h3 style="color: #000000; margin-bottom: 15px; font-size: 1.5rem; font-weight: 700;">Explore 100 SAE Features</h3>
+                        <p style="color: #000000; margin-bottom: 20px; line-height: 1.6;">
                             Interactive visualization of sparse autoencoder features trained on 100K cells from the Tahoe-x1 model, with biological validation against 8 major databases including HPO, GWAS Catalog, and Open Targets.
                         </p>
-                        <a href="feature-dashboard.html" class="btn" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; transition: all 0.3s;">
+                        <a href="feature-dashboard.html" class="btn btn-primary" style="display: inline-block;">
                             Launch Interactive Dashboard →
                         </a>
                     </div>
@@ -220,7 +227,13 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2024 Lucent Cell. All rights reserved.</p>
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="../images/logo.png" alt="Lucent Cell Logo" class="footer-logo-image">
+                    <span class="footer-brand">Lucent Cell</span>
+                </div>
+                <p class="footer-text">&copy; 2025 Lucent Cell. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 </body>
