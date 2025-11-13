@@ -1030,6 +1030,57 @@ section h2::after {
     width: 100%;
 }
 
+/* Citations and References */
+.post-content sup {
+    line-height: 0;
+}
+
+.post-content sup a {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.75em;
+    padding: 0 2px;
+    transition: color 0.3s ease;
+}
+
+.post-content sup a:hover {
+    color: #666666;
+}
+
+.references {
+    list-style: decimal;
+    padding-left: 2rem;
+    margin-top: 1.5rem;
+}
+
+.references li {
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+    color: #000000;
+    font-size: 0.95rem;
+    padding-left: 0.5rem;
+}
+
+.references li strong {
+    font-weight: 600;
+    color: #000000;
+}
+
+.references li a {
+    color: #000000;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+.references li a:hover {
+    color: #666666;
+}
+
+.references li em {
+    font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .hero h1 {

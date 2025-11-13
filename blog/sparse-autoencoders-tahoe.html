@@ -41,27 +41,27 @@
                     </div>
                     <h1>Sparse Autoencoders Reveal Interpretable Features in the Tahoe Single-Cell Foundation Model</h1>
                     <p class="post-subtitle">
-                        Using mechanistic interpretability techniques to understand how the Tahoe-x1 model processes single-cell RNA sequencing data and encodes biological knowledge.
+                        Using mechanistic interpretability techniques to understand how the Tahoe-x1 model<sup><a href="#ref-1">[1]</a></sup> processes single-cell RNA sequencing data and encodes biological knowledge.
                     </p>
                 </header>
 
                 <div class="post-content">
                     <h2>Introduction</h2>
                     <p>
-                        Single-cell foundation models like Tahoe-x1 have demonstrated remarkable capabilities in understanding cellular biology, but their internal mechanisms remain largely opaque. At Lucent Cell, we applied sparse autoencoders (SAEs) to decompose the Tahoe model's learned representations into interpretable features that correspond to meaningful biological concepts.
+                        Single-cell foundation models like Tahoe-x1<sup><a href="#ref-1">[1]</a></sup> have demonstrated remarkable capabilities in understanding cellular biology, but their internal mechanisms remain largely opaque. At Lucent Cell, we applied sparse autoencoders (SAEs) to decompose the Tahoe model's learned representations into interpretable features that correspond to meaningful biological concepts.
                     </p>
 
                     <h2>Methodology</h2>
                     <p>
-                        We trained TopK sparse autoencoders on intermediate layer activations from the Tahoe-x1 model using the SAELens framework. Our approach involved several key steps:
+                        We trained TopK sparse autoencoders on intermediate layer activations from the Tahoe-x1 model<sup><a href="#ref-1">[1]</a></sup> using the SAELens framework<sup><a href="#ref-2">[2]</a></sup>. Our approach involved several key steps:
                     </p>
 
                     <h3>Model Setup</h3>
                     <ul>
-                        <li><strong>Foundation Model:</strong> Tahoe-x1 70M parameter model from HuggingFace</li>
+                        <li><strong>Foundation Model:</strong> Tahoe-x1 70M parameter model<sup><a href="#ref-1">[1]</a></sup> from HuggingFace</li>
                         <li><strong>Hook Points:</strong> Extracted activations from MLP outputs at layers 0, 3, 6, 9, and 11</li>
-                        <li><strong>SAE Architecture:</strong> TopK SAE with k=64 active features and d_sae=16,384 total features</li>
-                        <li><strong>Training Data:</strong> PBMC 3k dataset with 2,700 cells and 32,738 genes</li>
+                        <li><strong>SAE Architecture:</strong> TopK SAE<sup><a href="#ref-3">[3]</a></sup> with k=64 active features and d_sae=16,384 total features</li>
+                        <li><strong>Training Data:</strong> PBMC 3k dataset<sup><a href="#ref-4">[4]</a></sup> with 2,700 cells and 32,738 genes</li>
                     </ul>
 
                     <h3>Training Process</h3>
@@ -95,7 +95,7 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
 
                     <h3>3. Disease-Associated Features</h3>
                     <p>
-                        Remarkably, Feature 7834 showed enrichment for genes associated with inflammatory diseases through our validation against the Open Targets database, including TNF, IL1B, and CXCL8. This demonstrates the model's ability to encode disease-relevant biological patterns.
+                        Remarkably, Feature 7834 showed enrichment for genes associated with inflammatory diseases through our validation against the Open Targets database<sup><a href="#ref-9">[9]</a></sup>, including TNF, IL1B, and CXCL8. This demonstrates the model's ability to encode disease-relevant biological patterns.
                     </p>
 
                     <h2>Validation Results</h2>
@@ -115,19 +115,19 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>Gene Ontology</td>
+                                    <td>Gene Ontology<sup><a href="#ref-5">[5]</a></sup></td>
                                     <td>1,247</td>
                                     <td>&lt; 0.001</td>
                                     <td>Immune system process</td>
                                 </tr>
                                 <tr>
-                                    <td>KEGG Pathways</td>
+                                    <td>KEGG Pathways<sup><a href="#ref-6">[6]</a></sup></td>
                                     <td>892</td>
                                     <td>&lt; 0.001</td>
                                     <td>Cytokine-cytokine receptor interaction</td>
                                 </tr>
                                 <tr>
-                                    <td>Human Phenotype Ontology</td>
+                                    <td>Human Phenotype Ontology<sup><a href="#ref-7">[7]</a></sup></td>
                                     <td>634</td>
                                     <td>&lt; 0.001</td>
                                     <td>Abnormal inflammatory response</td>
@@ -152,7 +152,7 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                     <div class="dashboard-cta" style="background: #f8f9fa; padding: 30px; border: 2px solid #000000; margin: 30px 0; text-align: left;">
                         <h3 style="color: #000000; margin-bottom: 15px; font-size: 1.5rem; font-weight: 700;">Explore 100 SAE Features</h3>
                         <p style="color: #000000; margin-bottom: 20px; line-height: 1.6;">
-                            Interactive visualization of sparse autoencoder features trained on 100K cells from the Tahoe-x1 model, with biological validation against 8 major databases including HPO, GWAS Catalog, and Open Targets.
+                            Interactive visualization of sparse autoencoder features trained on 100K cells from the Tahoe-x1 model<sup><a href="#ref-1" style="color: #000000;">[1]</a></sup>, with biological validation against 8 major databases including HPO<sup><a href="#ref-7" style="color: #000000;">[7]</a></sup>, GWAS Catalog<sup><a href="#ref-8" style="color: #000000;">[8]</a></sup>, and Open Targets<sup><a href="#ref-9" style="color: #000000;">[9]</a></sup>.
                         </p>
                         <a href="feature-dashboard.html" class="btn btn-primary" style="display: inline-block;">
                             Launch Interactive Dashboard →
@@ -182,7 +182,7 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                     </p>
                     <ul>
                         <li><strong>TahoeAdapter:</strong> Extracts activations from any Tahoe model layer</li>
-                        <li><strong>SAETrainer:</strong> Configurable sparse autoencoder training with SAELens v6</li>
+                        <li><strong>SAETrainer:</strong> Configurable sparse autoencoder training with SAELens v6<sup><a href="#ref-2">[2]</a></sup></li>
                         <li><strong>FeatureAnalyzer:</strong> Computes gene and cell-type associations</li>
                         <li><strong>ValidationPipeline:</strong> Automated biological database validation</li>
                         <li><strong>DashboardGenerator:</strong> Creates interactive HTML visualizations</li>
@@ -206,6 +206,63 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                     <p>
                         This work represents a crucial step toward trustworthy AI in biology, where model predictions are not just accurate but also interpretable and actionable. As foundation models become increasingly powerful, mechanistic interpretability will be essential for translating their capabilities into real-world therapeutic advances.
                     </p>
+
+                    <h2>References</h2>
+                    <ol class="references">
+                        <li id="ref-1">
+                            Gandhi, S., Javadi, F., Svensson, V., Khan, U., Jones, M.G., Yu, J., Merico, D., Goodarzi, H., & Alidoust, N. (2025).
+                            <strong>Tahoe-x1: Scaling Perturbation-Trained Single-Cell Foundation Models to 3 Billion Parameters.</strong>
+                            <em>bioRxiv</em>.
+                            <a href="https://api.semanticscholar.org/CorpusID:282385024" target="_blank">https://api.semanticscholar.org/CorpusID:282385024</a>
+                        </li>
+                        <li id="ref-2">
+                            Bloom, J., Tigges, C., Duong, A., & Chanin, D. (2024).
+                            <strong>SAELens.</strong>
+                            <a href="https://github.com/decoderesearch/SAELens" target="_blank">https://github.com/decoderesearch/SAELens</a>
+                        </li>
+                        <li id="ref-3">
+                            Bussmann, B., Leask, P., & Nanda, N. (2024).
+                            <strong>BatchTopK Sparse Autoencoders.</strong>
+                            arXiv:2412.06410.
+                            <a href="https://arxiv.org/abs/2412.06410" target="_blank">https://arxiv.org/abs/2412.06410</a>
+                        </li>
+                        <li id="ref-4">
+                            Duan, S. (2025).
+                            <strong>3k PBMCs from a healthy donor.</strong>
+                            <em>Figshare</em>.
+                            DOI: <a href="https://doi.org/10.6084/m9.figshare.28414916.v1" target="_blank">10.6084/m9.figshare.28414916.v1</a>
+                        </li>
+                        <li id="ref-5">
+                            Ashburner, M., Ball, C.A., Blake, J.A., Botstein, D., Butler, H., Cherry, J.M., Davis, A.P., Dolinski, K., Dwight, S.S., Eppig, J.T., Harris, M.A., Hill, D.P., Issel-Tarver, L., Kasarskis, A., Lewis, S., Matese, J.C., Richardson, J.E., Ringwald, M., Rubin, G.M., & Sherlock, G. (2000).
+                            <strong>Gene Ontology: tool for the unification of biology.</strong>
+                            <em>Nature Genetics</em>, 25, 25-29.
+                            <a href="https://api.semanticscholar.org/CorpusID:10718909" target="_blank">https://api.semanticscholar.org/CorpusID:10718909</a>
+                        </li>
+                        <li id="ref-6">
+                            Kanehisa, M., Furumichi, M., Tanabe, M., Sato, Y., & Morishima, K. (2016).
+                            <strong>KEGG: new perspectives on genomes, pathways, diseases and drugs.</strong>
+                            <em>Nucleic Acids Research</em>, 45, D353-D361.
+                            <a href="https://api.semanticscholar.org/CorpusID:8537106" target="_blank">https://api.semanticscholar.org/CorpusID:8537106</a>
+                        </li>
+                        <li id="ref-7">
+                            Köhler, S., Gargano, M.A., Matentzoglu, N.A., Carmody, L., Lewis-Smith, D., Vasilevsky, N.A., Danis, D., Balagura, G., Baynam, G., Brower, A.M., et al. (2021).
+                            <strong>The Human Phenotype Ontology in 2021.</strong>
+                            <em>Nucleic Acids Research</em>, 49, D1207-D1217.
+                            <a href="https://api.semanticscholar.org/CorpusID:227259356" target="_blank">https://api.semanticscholar.org/CorpusID:227259356</a>
+                        </li>
+                        <li id="ref-8">
+                            Buniello, A., MacArthur, J.A.L., Cerezo, M., Harris, L.W., Hayhurst, J., Malangone, C., McMahon, A., Morales, J., Mountjoy, E., Sollis, E., et al. (2019).
+                            <strong>The NHGRI-EBI GWAS Catalog of published genome-wide association studies, targeted arrays and summary statistics 2019.</strong>
+                            <em>Nucleic Acids Research</em>, 47, D1005-D1012.
+                            <a href="https://api.semanticscholar.org/CorpusID:53568759" target="_blank">https://api.semanticscholar.org/CorpusID:53568759</a>
+                        </li>
+                        <li id="ref-9">
+                            Buniello, A., Suveges, D., Cruz-Castillo, C., Bernal Llinares, M., Cornu, H., Lopez, I., Tsukanov, K., Roldan-Romero, J.M., Mehta, C., Fumis, L., et al. (2024).
+                            <strong>Open Targets Platform: facilitating therapeutic hypotheses building in drug discovery.</strong>
+                            <em>Nucleic Acids Research</em>, 53, D1467-D1475.
+                            <a href="https://api.semanticscholar.org/CorpusID:274646035" target="_blank">https://api.semanticscholar.org/CorpusID:274646035</a>
+                        </li>
+                    </ol>
 
                     <div class="post-footer">
                         <div class="post-tags">
