@@ -48,19 +48,49 @@
                 <div class="post-content">
                     <h2>Introduction</h2>
                     <p>
-                        Single-cell foundation models like Tahoe-x1<sup><a href="#ref-1">[1]</a></sup> have demonstrated remarkable capabilities in understanding cellular biology, but their internal mechanisms remain largely opaque. At Lucent Cell, we applied sparse autoencoders (SAEs) to decompose the Tahoe model's learned representations into interpretable features that correspond to meaningful biological concepts.
+                        Single-cell foundation models like Tahoe-x1<sup><a href="#ref-1">[1]</a></sup> have demonstrated remarkable capabilities in understanding cellular biology, but their internal mechanisms remain largely opaque. These models learn rich representations by training on millions of cells, yet we don't fully understand what biological concepts they encode or how they make predictions.
+                    </p>
+                    <p>
+                        At Lucent Cell, we applied sparse autoencoders (SAEs) to decompose the Tahoe-x1 model's learned representations into interpretable features. By training SAEs on intermediate layer activations, we can identify distinct features that each correspond to specific biological concepts—such as individual cell types, pathways, or disease states. This approach allows us to peer inside the "black box" and understand the biological knowledge encoded within foundation models.
+                    </p>
+
+                    <h2>Tahoe-x1 Model Architecture</h2>
+                    <p>
+                        Tahoe-x1<sup><a href="#ref-1">[1]</a></sup> is a transformer-based foundation model trained on 266 million single-cell RNA-seq profiles, including 100 million perturbed cells exposed to various drug treatments across thousands of experimental conditions. The model's architecture is designed to learn from the complex patterns of gene expression that define cellular identity and state.
+                    </p>
+
+                    <div class="figure" style="margin: 2rem 0;">
+                        <img src="../images/tahoe-x1-arch.jpg" alt="Tahoe-x1 Architecture Diagram" style="width: 100%; max-width: 900px; display: block; margin: 0 auto; border: 2px solid #000000;">
+                        <p class="figure-caption" style="text-align: center; margin-top: 1rem; font-size: 0.95rem; color: #666; font-style: italic;">
+                            <strong>Figure 1: Tahoe-x1 Architecture</strong> (adapted from Figure 1 in Gandhi et al.<sup><a href="#ref-1" style="color: #666;">[1]</a></sup>). Gene tokens are created by combining gene identity, expression level, and mask embeddings. The dual decoder architecture predicts masked gene expression using both token-level representations (gene-aware) and global cell context (cell-aware), enabling the model to learn both local gene-gene relationships and broader cellular programs.
+                        </p>
+                    </div>
+
+                    <p>
+                        The model represents each cell as a sequence of gene tokens. For each gene, three components are combined: a gene identity embedding (which specific gene it is), an expression level embedding (the gene's activity discretized into bins), and a mask embedding (indicating whether this gene is masked during training). When drug perturbation data is available, an additional chemical encoder initialized with Morgan fingerprints provides molecular context.
+                    </p>
+
+                    <p>
+                        Tahoe-x1 is trained using a masked language modeling objective: random genes in each cell's sequence are masked, and the model must predict their expression values based on the context provided by other genes. This is accomplished through a dual decoder architecture—one decoder makes predictions using individual token representations (gene-aware), while another conditions its predictions on the global cell embedding from a special &lt;cls&gt; token (cell-aware). This design allows the model to capture both fine-grained gene-gene interactions and broader cellular context.
+                    </p>
+
+                    <p>
+                        Through this training process across hundreds of millions of cells, Tahoe-x1 learns to encode gene co-expression patterns, biological pathway activations, cell type identities, and drug-gene interactions in its hidden layers. However, these representations are complex and entangled, making it difficult to understand what specific biological concepts the model has learned.
                     </p>
 
                     <h2>Methodology</h2>
                     <p>
-                        We trained TopK sparse autoencoders on intermediate layer activations from the Tahoe-x1 model<sup><a href="#ref-1">[1]</a></sup> using the SAELens framework<sup><a href="#ref-2">[2]</a></sup>. Our approach involved several key steps:
+                        To interpret Tahoe-x1's learned representations, we trained sparse autoencoders (SAEs) on its intermediate layer activations. SAEs decompose dense activation vectors into sparse linear combinations of learned features, where each feature ideally captures one independent biological concept. This allows us to identify what specific patterns—such as T cell identity, interferon response, or inflammatory signaling—are encoded in the model's hidden layers.
+                    </p>
+                    <p>
+                        We used TopK sparse autoencoders<sup><a href="#ref-3">[3]</a></sup>, which enforce sparsity by allowing only the top k features to activate for any given cell, trained on activations from the Tahoe-x1 model<sup><a href="#ref-1">[1]</a></sup> using the SAELens framework<sup><a href="#ref-2">[2]</a></sup>. For each learned feature, we compute gene associations, cell type enrichments, and biological pathway correlations to determine what the feature represents.
                     </p>
 
                     <h3>Model Setup</h3>
                     <ul>
-                        <li><strong>Foundation Model:</strong> Tahoe-x1 70M parameter model<sup><a href="#ref-1">[1]</a></sup> from HuggingFace</li>
+                        <li><strong>Foundation Model:</strong> Tahoe-x1 70M parameter model from HuggingFace</li>
                         <li><strong>Hook Points:</strong> Extracted activations from MLP outputs at layers 0, 3, 6, 9, and 11</li>
-                        <li><strong>SAE Architecture:</strong> TopK SAE<sup><a href="#ref-3">[3]</a></sup> with k=64 active features and d_sae=16,384 total features</li>
+                        <li><strong>SAE Architecture:</strong> TopK SAE with k=64 active features and d_sae=16,384 total features</li>
                         <li><strong>Training Data:</strong> PBMC 3k dataset<sup><a href="#ref-4">[4]</a></sup> with 2,700 cells and 32,738 genes</li>
                     </ul>
 
@@ -81,22 +111,42 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
 </code></pre>
                     </div>
 
-                    <h2>Key Findings</h2>
-
-                    <h3>1. Cell Type-Specific Features</h3>
+                    <h2>Technical Implementation</h2>
                     <p>
-                        Several SAE features showed strong correspondence to known cell types. Feature 1247 activated specifically for T cells, with top-associated genes including CD3D, CD3G, and IL7R. Feature 892 was selective for monocytes, associating with CD14, FCGR3A, and S100A8.
+                        Our complete pipeline is available as an open-source Python package that integrates with the Tahoe ecosystem. Key components include:
+                    </p>
+                    <ul>
+                        <li><strong>TahoeAdapter:</strong> Extracts activations from any Tahoe model layer</li>
+                        <li><strong>SAETrainer:</strong> Configurable sparse autoencoder training with SAELens v6<sup><a href="#ref-2">[2]</a></sup></li>
+                        <li><strong>FeatureAnalyzer:</strong> Computes gene and cell-type associations</li>
+                        <li><strong>ValidationPipeline:</strong> Automated biological database validation</li>
+                        <li><strong>DashboardGenerator:</strong> Creates interactive HTML visualizations</li>
+                    </ul>
+
+                    <h2>Feature Analysis and Outputs</h2>
+                    <p>
+                        For each of the 16,384 learned SAE features, our pipeline computes comprehensive biological associations to determine what each feature represents. This analysis produces several key outputs that make the features interpretable:
+                    </p>
+                    <ul>
+                        <li><strong>Gene Rankings:</strong> For each feature, we identify the genes whose expression most strongly correlates with feature activation, ranked by both activation strength and frequency across cells</li>
+                        <li><strong>Cell Type Enrichments:</strong> We compute which cell types preferentially activate each feature, revealing features that are specific to T cells, monocytes, or other cell populations</li>
+                        <li><strong>Pathway Associations:</strong> Features are validated against biological pathway databases (Gene Ontology<sup><a href="#ref-5">[5]</a></sup>, KEGG<sup><a href="#ref-6">[6]</a></sup>) to identify which biological processes they capture</li>
+                        <li><strong>Disease/Phenotype Enrichments:</strong> We test for enrichment in disease-associated gene sets from HPO<sup><a href="#ref-7">[7]</a></sup>, GWAS Catalog<sup><a href="#ref-8">[8]</a></sup>, and Open Targets<sup><a href="#ref-9">[9]</a></sup></li>
+                        <li><strong>Activation Patterns:</strong> We track which cells activate each feature and at what intensity, providing activation percentiles and frequency statistics</li>
+                    </ul>
+                    <p>
+                        To facilitate exploration of these outputs, we created an interactive dashboard that provides feature-by-feature analysis with searchable, sortable gene lists, color-coded pathway associations, and expandable disease enrichment panels. The dashboard serves as a window into the 100 most interpretable features extracted from Tahoe-x1's layer 6 representations.
                     </p>
 
-                    <h3>2. Biological Pathway Encoding</h3>
-                    <p>
-                        Feature 2156 captured interferon response pathways, with strong associations to ISG15, IFIT1, and MX1. This suggests the model learns to represent coordinated gene expression programs that are fundamental to cellular function.
-                    </p>
-
-                    <h3>3. Disease-Associated Features</h3>
-                    <p>
-                        Remarkably, Feature 7834 showed enrichment for genes associated with inflammatory diseases through our validation against the Open Targets database<sup><a href="#ref-9">[9]</a></sup>, including TNF, IL1B, and CXCL8. This demonstrates the model's ability to encode disease-relevant biological patterns.
-                    </p>
+                    <div class="dashboard-cta" style="background: #f8f9fa; padding: 30px; border: 2px solid #000000; margin: 30px 0; text-align: left;">
+                        <h3 style="color: #000000; margin-bottom: 15px; font-size: 1.5rem; font-weight: 700;">Explore 100 SAE Features</h3>
+                        <p style="color: #000000; margin-bottom: 20px; line-height: 1.6;">
+                            Interactive visualization of sparse autoencoder features trained on 100K cells from the Tahoe-x1 model<sup><a href="#ref-1" style="color: #000000;">[1]</a></sup>, with biological validation against 8 major databases including HPO<sup><a href="#ref-7" style="color: #000000;">[7]</a></sup>, GWAS Catalog<sup><a href="#ref-8" style="color: #000000;">[8]</a></sup>, and Open Targets<sup><a href="#ref-9" style="color: #000000;">[9]</a></sup>.
+                        </p>
+                        <a href="feature-dashboard.html" class="btn btn-primary" style="display: inline-block;">
+                            Launch Interactive Dashboard →
+                        </a>
+                    </div>
 
                     <h2>Validation Results</h2>
                     <p>
@@ -136,75 +186,34 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                         </table>
                     </div>
 
-                    <h2>Interactive Dashboard</h2>
+                    <h2>Key Findings</h2>
+
+                    <h3>1. Cell Type-Specific Features</h3>
                     <p>
-                        We created an interactive dashboard that allows researchers to explore the extracted features, view top-associated genes, and examine cell-type enrichments. The dashboard provides:
-                    </p>
-                    <ul>
-                        <li>Feature-by-feature analysis with gene rankings and activation percentiles</li>
-                        <li>Cell type enrichment visualizations</li>
-                        <li>Biological pathway associations with color-coded gene cards</li>
-                        <li>Search functionality across all features</li>
-                        <li>Sortable gene lists by activation and frequency</li>
-                        <li>Expandable disease/phenotype enrichment dropdowns</li>
-                    </ul>
-
-                    <div class="dashboard-cta" style="background: #f8f9fa; padding: 30px; border: 2px solid #000000; margin: 30px 0; text-align: left;">
-                        <h3 style="color: #000000; margin-bottom: 15px; font-size: 1.5rem; font-weight: 700;">Explore 100 SAE Features</h3>
-                        <p style="color: #000000; margin-bottom: 20px; line-height: 1.6;">
-                            Interactive visualization of sparse autoencoder features trained on 100K cells from the Tahoe-x1 model<sup><a href="#ref-1" style="color: #000000;">[1]</a></sup>, with biological validation against 8 major databases including HPO<sup><a href="#ref-7" style="color: #000000;">[7]</a></sup>, GWAS Catalog<sup><a href="#ref-8" style="color: #000000;">[8]</a></sup>, and Open Targets<sup><a href="#ref-9" style="color: #000000;">[9]</a></sup>.
-                        </p>
-                        <a href="feature-dashboard.html" class="btn btn-primary" style="display: inline-block;">
-                            Launch Interactive Dashboard →
-                        </a>
-                    </div>
-
-                    <h2>Implications for Research</h2>
-
-                    <h3>Understanding Model Behavior</h3>
-                    <p>
-                        Our SAE analysis reveals that Tahoe-x1 learns biologically meaningful representations without explicit supervision. The model naturally organizes its internal features around cell types, pathways, and disease states that are fundamental to cellular biology.
+                        Several SAE features showed strong correspondence to known cell types. Feature 1247 activated specifically for T cells, with top-associated genes including CD3D, CD3G, and IL7R. Feature 892 was selective for monocytes, associating with CD14, FCGR3A, and S100A8.
                     </p>
 
-                    <h3>Drug Discovery Applications</h3>
+                    <h3>2. Biological Pathway Encoding</h3>
                     <p>
-                        The interpretable features we extracted could guide drug target identification. Features that activate in disease-associated cellular states may reveal novel therapeutic targets or biomarkers for precision medicine approaches.
+                        Feature 2156 captured interferon response pathways, with strong associations to ISG15, IFIT1, and MX1. This suggests the model learns to represent coordinated gene expression programs that are fundamental to cellular function.
                     </p>
 
-                    <h3>Model Improvement</h3>
+                    <h3>3. Disease-Associated Features</h3>
                     <p>
-                        Understanding which biological concepts the model captures (and which it misses) can inform training strategies for next-generation foundation models. Features with poor biological validation highlight areas where model architecture or training data could be improved.
+                        Remarkably, Feature 7834 showed enrichment for genes associated with inflammatory diseases through our validation against the Open Targets database<sup><a href="#ref-9">[9]</a></sup>, including TNF, IL1B, and CXCL8. This demonstrates the model's ability to encode disease-relevant biological patterns.
                     </p>
 
-                    <h2>Technical Implementation</h2>
+                    <h2>Discussion and Future Directions</h2>
                     <p>
-                        Our complete pipeline is available as an open-source Python package that integrates with the Tahoe ecosystem. Key components include:
+                        Our analysis reveals that Tahoe-x1 naturally organizes its representations around biologically meaningful concepts—cell types, pathways, and disease states—without explicit supervision. The interpretable features we extracted could guide drug target identification, particularly features that activate in disease-associated cellular states. Understanding which concepts the model captures (and which it misses) also provides insight for improving next-generation foundation models.
                     </p>
-                    <ul>
-                        <li><strong>TahoeAdapter:</strong> Extracts activations from any Tahoe model layer</li>
-                        <li><strong>SAETrainer:</strong> Configurable sparse autoencoder training with SAELens v6<sup><a href="#ref-2">[2]</a></sup></li>
-                        <li><strong>FeatureAnalyzer:</strong> Computes gene and cell-type associations</li>
-                        <li><strong>ValidationPipeline:</strong> Automated biological database validation</li>
-                        <li><strong>DashboardGenerator:</strong> Creates interactive HTML visualizations</li>
-                    </ul>
-
-                    <h2>Future Directions</h2>
                     <p>
-                        This work opens several promising research directions:
+                        Future work includes feature steering to control model predictions, cross-model comparisons to understand shared versus model-specific representations, and clinical validation of feature-based insights in patient datasets.
                     </p>
-                    <ul>
-                        <li><strong>Feature Steering:</strong> Manipulating SAE features to control model predictions</li>
-                        <li><strong>Cross-Model Analysis:</strong> Comparing features across different foundation models</li>
-                        <li><strong>Perturbation Studies:</strong> Using interpretable features to understand cellular responses</li>
-                        <li><strong>Clinical Validation:</strong> Testing feature-based insights in clinical datasets</li>
-                    </ul>
 
                     <h2>Conclusion</h2>
                     <p>
-                        Our sparse autoencoder analysis demonstrates that single-cell foundation models like Tahoe-x1 learn rich, interpretable representations of cellular biology. By making these representations transparent, we can better understand model behavior, validate biological insights, and guide the development of more effective AI systems for biological research.
-                    </p>
-                    <p>
-                        This work represents a crucial step toward trustworthy AI in biology, where model predictions are not just accurate but also interpretable and actionable. As foundation models become increasingly powerful, mechanistic interpretability will be essential for translating their capabilities into real-world therapeutic advances.
+                        By applying sparse autoencoders to Tahoe-x1, we demonstrated that single-cell foundation models learn interpretable biological representations that can be systematically decoded. This approach enables mechanistic understanding of what these models learn and how they make predictions—a crucial step toward building trustworthy AI systems for biology and therapeutic discovery.
                     </p>
 
                     <h2>References</h2>
