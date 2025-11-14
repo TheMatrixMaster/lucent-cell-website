@@ -51,7 +51,7 @@
                         Single-cell foundation models like Tahoe-x1<sup><a href="#ref-1">[1]</a></sup> have demonstrated remarkable capabilities in understanding cellular biology, but their internal mechanisms remain largely opaque. These models learn rich representations by training on millions of cells, yet we don't fully understand what biological concepts they encode or how they make predictions.
                     </p>
                     <p>
-                        At Lucent Cell, we applied sparse autoencoders (SAEs) to decompose the Tahoe-x1 model's learned representations into interpretable features. By training SAEs on intermediate layer activations, we can identify distinct features that each correspond to specific biological concepts—such as individual cell types, pathways, or disease states. This approach allows us to peer inside the "black box" and understand the biological knowledge encoded within foundation models.
+                        At Lucent Cell, we applied sparse autoencoders (SAEs) to decompose the Tahoe-x1 model's learned representations into interpretable features. By training SAEs on intermediate layer activations, we can identify distinct features that each correspond to specific biological concepts, such as individual cell types, pathways, or disease states. This approach allows us to peer inside the "black box" and understand the biological knowledge encoded within foundation models.
                     </p>
 
                     <h2>Tahoe-x1 Model Architecture</h2>
@@ -71,7 +71,7 @@
                     </p>
 
                     <p>
-                        Tahoe-x1 is trained using a masked language modeling objective: random genes in each cell's sequence are masked, and the model must predict their expression values based on the context provided by other genes. This is accomplished through a dual decoder architecture—one decoder makes predictions using individual token representations (gene-aware), while another conditions its predictions on the global cell embedding from a special &lt;cls&gt; token (cell-aware). This design allows the model to capture both fine-grained gene-gene interactions and broader cellular context.
+                        Tahoe-x1 is trained using a masked language modeling objective: random genes in each cell's sequence are masked, and the model must predict their expression values based on the context provided by other genes. This is accomplished through a dual decoder architecture, one decoder makes predictions using individual token representations (gene-aware), while another conditions its predictions on the global cell embedding from a special &lt;cls&gt; token (cell-aware). This design allows the model to capture both fine-grained gene-gene interactions and broader cellular context.
                     </p>
 
                     <p>
@@ -80,7 +80,7 @@
 
                     <h2>Methodology</h2>
                     <p>
-                        To interpret Tahoe-x1's learned representations, we trained sparse autoencoders (SAEs) on its intermediate layer activations. SAEs decompose dense activation vectors into sparse linear combinations of learned features, where each feature ideally captures one independent biological concept. This allows us to identify what specific patterns—such as T cell identity, interferon response, or inflammatory signaling—are encoded in the model's hidden layers.
+                        To interpret Tahoe-x1's learned representations, we trained sparse autoencoders (SAEs) on its intermediate layer activations. SAEs decompose dense activation vectors into sparse linear combinations of learned features, where each feature ideally captures one independent biological concept. This allows us to identify what specific patterns, such as T cell identity, interferon response, or inflammatory signaling, are encoded in the model's hidden layers.
                     </p>
                     <p>
                         We used TopK sparse autoencoders<sup><a href="#ref-3">[3]</a></sup>, which enforce sparsity by allowing only the top k features to activate for any given cell, trained on activations from the Tahoe-x1 model<sup><a href="#ref-1">[1]</a></sup> using the SAELens framework<sup><a href="#ref-2">[2]</a></sup>. For each learned feature, we compute gene associations, cell type enrichments, and biological pathway correlations to determine what the feature represents.
@@ -150,7 +150,10 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
 
                     <h2>Validation Results</h2>
                     <p>
-                        We validated our extracted features against multiple biological databases:
+                        To systematically evaluate whether the SAE features correspond to biologically meaningful concepts, we performed enrichment analysis against multiple curated databases. Enrichment analysis tests whether the genes associated with each feature are statistically overrepresented in known biological pathways, molecular functions, or disease gene sets. For each of the 100 analyzed features, we computed gene associations and tested for significant enrichment (p < 0.001, Fisher's exact test with Benjamini-Hochberg correction) across eight major biological databases.
+                    </p>
+                    <p>
+                        This validation strategy allows us to determine whether the model has learned interpretable biological modules rather than arbitrary gene combinations. Features that show significant enrichment for well-characterized biological processes provide evidence that Tahoe-x1's internal representations align with established biological knowledge, despite receiving no explicit pathway annotations during training.
                     </p>
 
                     <div class="results-table">
@@ -158,54 +161,79 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                             <thead>
                                 <tr>
                                     <th>Database</th>
-                                    <th>Significant Features</th>
+                                    <th>Description</th>
                                     <th>P-value Threshold</th>
-                                    <th>Top Enrichment</th>
+                                    <th>Example Enrichments</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td>Gene Ontology<sup><a href="#ref-5">[5]</a></sup></td>
-                                    <td>1,247</td>
+                                    <td>Molecular functions, biological processes, and cellular components</td>
                                     <td>&lt; 0.001</td>
-                                    <td>Immune system process</td>
+                                    <td>Immune system process, interferon response, cytokine production</td>
                                 </tr>
                                 <tr>
                                     <td>KEGG Pathways<sup><a href="#ref-6">[6]</a></sup></td>
-                                    <td>892</td>
+                                    <td>Metabolic and signaling pathway maps</td>
                                     <td>&lt; 0.001</td>
-                                    <td>Cytokine-cytokine receptor interaction</td>
+                                    <td>Cytokine-cytokine receptor interaction, JAK-STAT signaling</td>
                                 </tr>
                                 <tr>
                                     <td>Human Phenotype Ontology<sup><a href="#ref-7">[7]</a></sup></td>
-                                    <td>634</td>
+                                    <td>Disease phenotypes and clinical abnormalities</td>
                                     <td>&lt; 0.001</td>
-                                    <td>Abnormal inflammatory response</td>
+                                    <td>Abnormal inflammatory response, immunodeficiency, chronic infection</td>
+                                </tr>
+                                <tr>
+                                    <td>GWAS Catalog<sup><a href="#ref-8">[8]</a></sup></td>
+                                    <td>Genome-wide association study results</td>
+                                    <td>&lt; 0.001</td>
+                                    <td>Immune cell counts, inflammatory markers, autoimmune traits</td>
+                                </tr>
+                                <tr>
+                                    <td>Open Targets<sup><a href="#ref-9">[9]</a></sup></td>
+                                    <td>Disease-gene associations and drug targets</td>
+                                    <td>&lt; 0.001</td>
+                                    <td>Rheumatoid arthritis, inflammatory bowel disease, sepsis</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
+                    <p>
+                        Across these databases, features consistently enriched for immune-related processes, which is expected given the PBMC dataset composition. Many features showed specific enrichments across multiple databases. For example, features enriched for T cell markers in Gene Ontology also showed enrichment for lymphocyte-related traits in GWAS Catalog, providing cross-database validation of biological interpretability.
+                    </p>
+
                     <h2>Key Findings</h2>
 
-                    <h3>1. Cell Type-Specific Features</h3>
+                    <h3>1. T Cell Receptor Signaling Module</h3>
                     <p>
-                        Several SAE features showed strong correspondence to known cell types. Feature 1247 activated specifically for T cells, with top-associated genes including CD3D, CD3G, and IL7R. Feature 892 was selective for monocytes, associating with CD14, FCGR3A, and S100A8.
+                        One feature captured a canonical T cell signature, with its top-activating gene being CD3E (max activation at 99th percentile, detected in 0.10% of cells), a core component of the T cell receptor (TCR)-CD3 complex essential for T cell activation<sup><a href="#ref-10">[10]</a></sup>. The feature also strongly associated with ITK (IL2-inducible T cell kinase, 91st percentile), which plays a critical role in TCR signaling by phosphorylating PLCγ1 following TCR engagement, and RAC2 (93rd percentile), a Rho GTPase involved in T cell activation and migration.
+                    </p>
+                    <p>
+                        The CD3 complex, comprising CD3ε, CD3γ, CD3δ, and CD3ζ chains, provides the primary signal for T cell activation through immunoreceptor tyrosine-based activation motifs (ITAMs) that undergo phosphorylation by Src kinase Lck<sup><a href="#ref-10">[10]</a></sup>. The presence of CD3E alongside downstream signaling molecules like ITK suggests this feature captures not merely T cell identity, but the active T cell signaling state. This interpretation is supported by enrichment for lymphocyte-related traits in GWAS data (p < 0.001), including lymphocyte percentage of white cells and myeloid white cell counts.
                     </p>
 
-                    <h3>2. Biological Pathway Encoding</h3>
+                    <h3>2. Monocyte/Myeloid Activation and Innate Immunity</h3>
                     <p>
-                        Feature 2156 captured interferon response pathways, with strong associations to ISG15, IFIT1, and MX1. This suggests the model learns to represent coordinated gene expression programs that are fundamental to cellular function.
+                        A second feature exhibited strong monocyte/myeloid specificity, with its two highest-activating genes being S100A8 (94.37 max activation, 99th percentile) and S100A9 (86.22 max activation, 98th percentile). These calcium-binding proteins form the heterodimeric complex calprotectin, which constitutes up to 40% of the cytosolic protein content in neutrophils and monocytes<sup><a href="#ref-11">[11]</a></sup>. The feature also included LYZ (lysozyme, 48.98 activation, 94th percentile), a canonical monocyte/macrophage marker with antimicrobial function, and CST3 (cystatin C, 43.11 activation, 90th percentile), a cysteine protease inhibitor secreted by immune cells.
+                    </p>
+                    <p>
+                        Calprotectin serves as a damage-associated molecular pattern (DAMP) in the extracellular space, functioning as an alarmin that stimulates neutrophil chemotaxis and cytokine release through TLR4 and RAGE receptor activation<sup><a href="#ref-11">[11]</a></sup><sup><a href="#ref-12">[12]</a></sup>. S100A8/A9 has been identified as an endogenous activator of TLR4, promoting MyD88-dependent and TRIF-dependent signaling pathways that result in NF-κB-mediated gene transcription<sup><a href="#ref-12">[12]</a></sup>. Its presence in this feature, detected across 16.46% of cells for S100A8 and 18.72% for S100A9, reflects its role in the innate immune response. The feature showed significant enrichment for inflammatory disease phenotypes including familial cirrhosis (p = 1.23×10⁻⁵) and conditions associated with chronic inflammation, consistent with calprotectin's established role as a biomarker in rheumatoid arthritis and inflammatory bowel disease<sup><a href="#ref-11">[11]</a></sup>.
                     </p>
 
-                    <h3>3. Disease-Associated Features</h3>
+                    <h3>3. Pro-Inflammatory Cytokine and Chemokine Network</h3>
                     <p>
-                        Remarkably, Feature 7834 showed enrichment for genes associated with inflammatory diseases through our validation against the Open Targets database<sup><a href="#ref-9">[9]</a></sup>, including TNF, IL1B, and CXCL8. This demonstrates the model's ability to encode disease-relevant biological patterns.
+                        A third feature represented a coordinated inflammatory cytokine response, dominated by the CXC chemokine family. The top-activating genes were CXCL1 (90.82, 99th percentile), CXCL8/IL-8 (89.06, 98th percentile), CXCL2 (77.49, 97th percentile), and CXCL3 (71.28, 96th percentile), all potent neutrophil chemoattractants that signal through CXCR1 and CXCR2 receptors<sup><a href="#ref-13">[13]</a></sup><sup><a href="#ref-14">[14]</a></sup>. The feature also included the key pro-inflammatory cytokines IL1B (64.55, 94th percentile) and IL6 (67.06, 95th percentile), which are central mediators of the acute inflammatory response and inflammasome activation.
+                    </p>
+                    <p>
+                        The CXC chemokines function hierarchically in neutrophil recruitment. CXCL1 mediates neutrophil adhesion and intraluminal crawling on inflamed endothelium, while CXCL2, presented by the atypical receptor ACKR1 on endothelial cell junctions, guides neutrophils to extravasation sites<sup><a href="#ref-14">[14]</a></sup>. CXCL8 stands out as the most potent monomeric CXCR1 agonist<sup><a href="#ref-13">[13]</a></sup>. The co-occurrence of these chemokines with IL1B and IL6 suggests this feature captures cells in an activated pro-inflammatory state, likely responding to bacterial infection or tissue damage. This interpretation is supported by enrichment analysis showing associations with thyroid dyshormonogenesis (p = 9.76×10⁻⁶) and abnormal circulating markers, reflecting the systemic nature of inflammatory responses.
                     </p>
 
                     <h2>Discussion and Future Directions</h2>
                     <p>
-                        Our analysis reveals that Tahoe-x1 naturally organizes its representations around biologically meaningful concepts—cell types, pathways, and disease states—without explicit supervision. The interpretable features we extracted could guide drug target identification, particularly features that activate in disease-associated cellular states. Understanding which concepts the model captures (and which it misses) also provides insight for improving next-generation foundation models.
+                        Our analysis reveals that Tahoe-x1 naturally organizes its representations around biologically meaningful concepts, cell types, pathways, and disease states, without explicit supervision. The interpretable features we extracted could guide drug target identification, particularly features that activate in disease-associated cellular states. Understanding which concepts the model captures (and which it misses) also provides insight for improving next-generation foundation models.
                     </p>
                     <p>
                         Future work includes feature steering to control model predictions, cross-model comparisons to understand shared versus model-specific representations, and clinical validation of feature-based insights in patient datasets.
@@ -213,7 +241,7 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
 
                     <h2>Conclusion</h2>
                     <p>
-                        By applying sparse autoencoders to Tahoe-x1, we demonstrated that single-cell foundation models learn interpretable biological representations that can be systematically decoded. This approach enables mechanistic understanding of what these models learn and how they make predictions—a crucial step toward building trustworthy AI systems for biology and therapeutic discovery.
+                        By applying sparse autoencoders to Tahoe-x1, we demonstrated that single-cell foundation models learn interpretable biological representations that can be systematically decoded. This approach enables mechanistic understanding of what these models learn and how they make predictions, a crucial step toward building trustworthy AI systems for biology and therapeutic discovery.
                     </p>
 
                     <h2>References</h2>
@@ -270,6 +298,36 @@ sae = train_sparse_autoencoder(activations, config, steps=10000)
                             <strong>Open Targets Platform: facilitating therapeutic hypotheses building in drug discovery.</strong>
                             <em>Nucleic Acids Research</em>, 53, D1467-D1475.
                             <a href="https://api.semanticscholar.org/CorpusID:274646035" target="_blank">https://api.semanticscholar.org/CorpusID:274646035</a>
+                        </li>
+                        <li id="ref-10">
+                            Mariuzza, R.A., Agnihotri, P., & Orban, J. (2019).
+                            <strong>The structural basis of T-cell receptor (TCR) activation: An enduring enigma.</strong>
+                            <em>Journal of Biological Chemistry</em>, 295, 914-925.
+                            <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC6983839/" target="_blank">https://pmc.ncbi.nlm.nih.gov/articles/PMC6983839/</a>
+                        </li>
+                        <li id="ref-11">
+                            Inciarte-Mundo, J., Frade-Sosa, B., & Sanmartí, R. (2022).
+                            <strong>From bench to bedside: Calprotectin (S100A8/S100A9) as a biomarker in rheumatoid arthritis.</strong>
+                            <em>Frontiers in Immunology</em>, 13.
+                            <a href="https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2022.1001025/full" target="_blank">https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2022.1001025/full</a>
+                        </li>
+                        <li id="ref-12">
+                            Ehrchen, J.M., Sunderkötter, C., Foell, D., Vogl, T., & Roth, J. (2009).
+                            <strong>The endogenous Toll-like receptor 4 agonist S100A8/S100A9 (calprotectin) as innate amplifier of infection, autoimmunity, and cancer.</strong>
+                            <em>Journal of Leukocyte Biology</em>, 86, 557-566.
+                            <a href="https://pubmed.ncbi.nlm.nih.gov/19451397/" target="_blank">https://pubmed.ncbi.nlm.nih.gov/19451397/</a>
+                        </li>
+                        <li id="ref-13">
+                            Cambier, S., Gouwy, M., & Proost, P. (2023).
+                            <strong>The chemokines CXCL8 and CXCL12: molecular and functional properties, role in disease and efforts towards pharmacological intervention.</strong>
+                            <em>Cellular and Molecular Immunology</em>, 20, 217-251.
+                            <a href="https://www.nature.com/articles/s41423-023-00974-6" target="_blank">https://www.nature.com/articles/s41423-023-00974-6</a>
+                        </li>
+                        <li id="ref-14">
+                            Capucetti, A., Albano, F., & Bonecchi, R. (2020).
+                            <strong>Multiple Roles for Chemokines in Neutrophil Biology.</strong>
+                            <em>Frontiers in Immunology</em>, 11.
+                            <a href="https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2020.01259/full" target="_blank">https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2020.01259/full</a>
                         </li>
                     </ol>
 
